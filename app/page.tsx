@@ -135,6 +135,7 @@ export default function NuevoTicket() {
                 <option value="" disabled>Elegí un aula...</option>
                 {sector === "Jardín" && (
                   <>
+                    <option value="Sala de 2">Sala de 2</option>
                     <option value="Sala de 3">Sala de 3</option>
                     <option value="Sala de 4">Sala de 4</option>
                     <option value="Sala de 5">Sala de 5</option>
@@ -148,19 +149,20 @@ export default function NuevoTicket() {
                     <option value="4to Año">4to Año </option>
                     <option value="5to Año">5to Año </option>
                     <option value="6to Año">6to Año </option>
-                    <option value="Sala de Informática">Sala de Informática</option>
+                    <option value="Gabinete informatica">Gabinete de Informática</option>
                     <option value="Laboratorio">Laboratorio</option>
                     <option value="Biblioteca">Biblioteca</option>
                   </>
                 )}
                 {sector === "Primaria" && (
                   <>
-                    <option value="1er Año">1er Grado </option>
-                    <option value="2do Año">2do Grado </option>
-                    <option value="3er Año">3er Grado </option>
-                    <option value="4to Año">4to Grado </option>
-                    <option value="5to Año">5to Grado </option>
-                    <option value="6to Año">6to Grado </option>
+                    <option value="1er Grado">1er Grado </option>
+                    <option value="2do Grado">2do Grado </option>
+                    <option value="3er Grado">3er Grado </option>
+                    <option value="4to Grado">4to Grado </option>
+                    <option value="5to Grado">5to Grado </option>
+                    <option value="6to Grado">6to Grado </option>
+                    <option value="Sala Computacion">Sala de computación</option>
                   </>
                 )}
               </select>
@@ -233,8 +235,11 @@ export default function NuevoTicket() {
                   <option value="" disabled>Seleccioná el problema...</option>
                   <option value="internet">No hay internet / Wi-Fi</option>
                   <option value="pc_no_prende">La compu no enciende</option>
-                  <option value="proyector">Problema con proyector / audio</option>
-                  <option value="impresora">La impresora no funciona</option>
+                  <option value="pc_lenta">La compu anda lenta</option>
+                  <option value="pc_reinicia">La compu tira pantalla azul con una carita triste </option>
+                  <option value="audio">Problema con audio</option>
+                  <option value="programas">Me faltan programas (especificar) </option>
+                  <option value="Impresora">Problemas con la impresora (especificar) </option>
                   <option value="otro">Otro tipo de problema</option>
                 </select>
               </div>
