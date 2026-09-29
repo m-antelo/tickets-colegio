@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Wrench, Send, AlertCircle, CheckCircle2, Building, BookOpen, Baby, Monitor } from "lucide-react";
+import { Wrench, Send, AlertCircle, CheckCircle2, Building, BookOpen, Baby, Monitor, Info } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 export default function NuevoTicket() {
@@ -23,7 +23,8 @@ export default function NuevoTicket() {
 
   const esAdministracion = sector === "Administración";
   const esOtroProblema = tipoProblema === "otro";
-  const requiereDivision = (sector === "Primaria" || sector === "Secundaria") && aula.includes("Año");
+  const requiereDivision = (sector === "Primaria" || sector === "Secundaria") && (aula.includes("Año") || aula.includes ("Grado"));
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +88,23 @@ export default function NuevoTicket() {
           <p className="text-zinc-500 text-sm mt-1.5">Reportá el problema y lo revisamos en breve.</p>
         </div>
 
+        {/* Recuadro informativo */}
+        <div className="bg-indigo-900/10 border border-indigo-500/20 rounded-2xl p-5 mb-8 relative z-10">
+          <div className="flex items-center gap-2 mb-3">
+            <Info className="w-5 h-5 text-indigo-400" />
+            <h3 className="font-semibold text-indigo-300">¿Cómo funciona el sistema?</h3>
+          </div>
+          <ul className="space-y-2 text-sm text-zinc-400 pl-7 list-disc marker:text-indigo-500/50">
+            <li>Cargá el problema acá y me llega directo a mí.</li>
+            <li>
+              Suelo estar en el colegio los <strong className="text-zinc-300">Jueves en el horario del mediodía</strong> 
+            </li>
+            <li>
+              Ante cualquier duda o urgencia, avisen a <strong className="text-zinc-300">Toti</strong> o a <strong className="text-zinc-300">Guada</strong> y ellos me contactan directamente.
+            </li>
+          </ul>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           
           {/* 1. Selección de Sector */}
@@ -148,7 +166,8 @@ export default function NuevoTicket() {
                     <option value="3er Año">3er Año </option>
                     <option value="4to Año">4to Año </option>
                     <option value="5to Año">5to Año </option>
-                    <option value="6to Año">6to Año </option>
+                    <option value="Intermedio">Intermedio</option>
+                    <option value="Auxiliar">Auxiliar (especificar ubicación)</option>
                     <option value="Gabinete informatica">Gabinete de Informática</option>
                     <option value="Sala de arte">Sala de arte</option>
                     <option value="Biblioteca">Biblioteca</option>
