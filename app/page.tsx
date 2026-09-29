@@ -142,12 +142,12 @@ export default function NuevoTicket() {
                 )}
                 {(sector === "Primaria" || sector === "Secundaria") && (
                   <>
-                    <option value="1er Año">1er Año / Grado</option>
-                    <option value="2do Año">2do Año / Grado</option>
-                    <option value="3er Año">3er Año / Grado</option>
-                    <option value="4to Año">4to Año / Grado</option>
-                    <option value="5to Año">5to Año / Grado</option>
-                    <option value="6to Año">6to Año / Grado</option>
+                    <option value="1er Año">1er Año </option>
+                    <option value="2do Año">2do Año </option>
+                    <option value="3er Año">3er Año </option>
+                    <option value="4to Año">4to Año </option>
+                    <option value="5to Año">5to Año </option>
+                    <option value="6to Año">6to Año </option>
                     <option value="Sala de Informática">Sala de Informática</option>
                     <option value="Laboratorio">Laboratorio</option>
                     <option value="Biblioteca">Biblioteca</option>
