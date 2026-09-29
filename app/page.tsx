@@ -140,7 +140,7 @@ export default function NuevoTicket() {
                     <option value="Sala de 5">Sala de 5</option>
                   </>
                 )}
-                {(sector === "Primaria" || sector === "Secundaria") && (
+                {(sector === "Secundaria") && (
                   <>
                     <option value="1er Año">1er Año </option>
                     <option value="2do Año">2do Año </option>
@@ -151,6 +151,16 @@ export default function NuevoTicket() {
                     <option value="Sala de Informática">Sala de Informática</option>
                     <option value="Laboratorio">Laboratorio</option>
                     <option value="Biblioteca">Biblioteca</option>
+                  </>
+                )}
+                {sector === "Primaria" && (
+                  <>
+                    <option value="1er Año">1er Grado </option>
+                    <option value="2do Año">2do Grado </option>
+                    <option value="3er Año">3er Grado </option>
+                    <option value="4to Año">4to Grado </option>
+                    <option value="5to Año">5to Grado </option>
+                    <option value="6to Año">6to Grado </option>
                   </>
                 )}
               </select>
