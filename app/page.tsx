@@ -10,6 +10,7 @@ export default function NuevoTicket() {
   const [aula, setAula] = useState("");
   const [division, setDivision] = useState(""); // <-- Agregamos el estado para M o J
   const [errorTurno, setErrorTurno] = useState(false);
+  const [telefono, setTelefono] = useState("");
 
 
   // Resto de los estados
@@ -17,6 +18,7 @@ export default function NuevoTicket() {
   const [prioridad, setPrioridad] = useState("Media");
   const [nombreAdmin, setNombreAdmin] = useState("");
   const [detalles, setDetalles] = useState("");
+  const [errorTelefono, setErrorTelefono] = useState(false);
   
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
@@ -39,13 +41,29 @@ export default function NuevoTicket() {
       return; 
     }
 
+
+    if (telefono) {
+      const soloNumeros = telefono.replace(/\D/g, ""); // Borra espacios, guiones o letras
+      if (soloNumeros.length !== 10) {
+        setErrorTelefono(true);
+        return; // Corta la ejecución acá y no envía el formulario
+      }
+    }
+    setErrorTelefono(false);
+
     setEnviando(true);
 
     // Formateamos la ubicación final para la base de datos
    // Formateamos la ubicación final para la base de datos (agrega M o J si corresponde)
-  const ubicacionFinal = esAdministracion 
+    const ubicacionFinal = esAdministracion 
       ? "Administración" 
       : `${sector} - ${aula}${requiereDivision && division ? ` (Turno ${division})` : ""}`;
+    
+
+    // Validación del teléfono (solo si el profe escribió algo)
+ // Si todo está bien, limpia el error
+
+    // ... acá sigue tu código de Supabase
 
     const { error } = await supabase
       .from('tickets')
@@ -55,9 +73,11 @@ export default function NuevoTicket() {
           nombre_admin: esAdministracion ? nombreAdmin : null, 
           tipo_problema: tipoProblema, 
           detalles, 
-          prioridad 
+          prioridad,
+          telefono: telefono,
         }
       ]);
+      
 
     setEnviando(false);
 
@@ -76,6 +96,8 @@ export default function NuevoTicket() {
         setEnviado(false);
       }, 3000);
     }
+
+    
   };
 
   return (
@@ -107,6 +129,10 @@ export default function NuevoTicket() {
             <li>
               Ante cualquier duda o urgencia, avisen a <strong className="text-zinc-300">Toti</strong> o a <strong className="text-zinc-300">Guada</strong> y ellos hablan con Mateo directamente.
             </li>
+            <li>
+              <strong className="text-zinc-300">Si la computadora tiene contraseña indicarla en detalles adicionales</strong>
+            </li>
+
           </ul>
         </div>
 
@@ -370,6 +396,28 @@ export default function NuevoTicket() {
                   ))}
                 </div>
               </div>
+              <div>
+          <label className="block text-sm font-medium text-zinc-400 mb-2">WhatsApp de contacto (opcional)</label>
+          <input
+            type="tel"
+            value={telefono}
+            onChange={(e) => {
+              setTelefono(e.target.value);
+              if (errorTelefono) setErrorTelefono(false); // Oculta el error ni bien empieza a corregirlo
+            }}
+            placeholder="Ej: 1123456789"
+            className={`w-full bg-[#09090b] border rounded-xl p-3.5 text-zinc-200 placeholder:text-zinc-500 font-sans focus:outline-none transition-all ${
+              errorTelefono 
+                ? "border-rose-500/70 focus:ring-1 focus:ring-rose-500/70" 
+                : "border-zinc-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50"
+            }`}
+          />
+          {errorTelefono && (
+            <p className="text-rose-400 text-sm mt-2 animate-in slide-in-from-top-1">
+              El número debe tener 10 dígitos (código de área + número, sin 0 ni 15).
+            </p>
+          )}
+        </div>
 
               <button 
                 type="submit" 

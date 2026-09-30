@@ -10,12 +10,18 @@ export default function PanelAdmin() {
   const [autenticado, setAutenticado] = useState(false);
   const [password, setPassword] = useState("");
   const [errorPassword, setErrorPassword] = useState(false);
+  const [rol, setRol] = useState(""); // Va a guardar "admin" o "visor"
 
   //funcion login
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "cjmadmin") { // <-- Cambiá esta contraseña por la que quieras
+    if (password === "cjmadmin") {
       setAutenticado(true);
+      setRol("admin");
+      setErrorPassword(false);
+    } else if (password === "cjmver") { // <--- Contraseña para el jefe
+      setAutenticado(true);
+      setRol("visor");
       setErrorPassword(false);
     } else {
       setErrorPassword(true);
@@ -196,9 +202,22 @@ export default function PanelAdmin() {
                       </p>
                     )}
                   </div>
+                  {ticket.telefono && (
+            <div className="mt-3">
+              <a 
+                href={`https://wa.me/549${ticket.telefono.replace(/\D/g, '')}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition-colors bg-emerald-400/10 px-3 py-1.5 rounded-lg"
+              >
+                Hablar por WhatsApp
+              </a>
+            </div>
+          )}
 
-{/* Botones de Acción */}
-                  <div className="mt-4 md:mt-0 w-full md:w-auto flex items-center gap-2">
+                  {/* Botones de Acción */}
+                    {rol === "admin" && (
+                    <div className="mt-4 md:mt-0 w-full md:w-auto flex items-center gap-2">
                     <button
                       onClick={() => toggleEstado(ticket.id, ticket.estado)}
                       className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
@@ -226,6 +245,7 @@ export default function PanelAdmin() {
                       <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
+                    )}
                 </article>
               );
             })}
