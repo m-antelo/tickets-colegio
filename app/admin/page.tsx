@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock, MessageCircle } from "lucide-react";
 
 export default function PanelAdmin() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -202,50 +202,53 @@ export default function PanelAdmin() {
                       </p>
                     )}
                   </div>
-                  {ticket.telefono && (
-            <div className="mt-3">
-              <a 
-                href={`https://wa.me/549${ticket.telefono.replace(/\D/g, '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition-colors bg-emerald-400/10 px-3 py-1.5 rounded-lg"
-              >
-                Hablar por WhatsApp
-              </a>
-            </div>
-          )}
-
-                  {/* Botones de Acción */}
-                    {rol === "admin" && (
+                  
+                {/* Botones de Acción (SOLO PARA ADMIN) */}
+                  {rol === "admin" && (
                     <div className="mt-4 md:mt-0 w-full md:w-auto flex items-center gap-2">
-                    <button
-                      onClick={() => toggleEstado(ticket.id, ticket.estado)}
-                      className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                        esPendiente 
-                          ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20" 
-                          : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-                      }`}
-                    >
-                      {esPendiente ? (
-                        "Marcar como Resuelto"
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                          Resuelto
-                        </>
+                      
+                      {/* Botón de WhatsApp (Cuadrado) */}
+                      {ticket.telefono && (
+                        <a 
+                          href={`https://wa.me/549${ticket.telefono.replace(/\D/g, '')}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all flex items-center justify-center"
+                          title="Hablar por WhatsApp"
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                        </a>
                       )}
-                    </button>
-                    
-                    {/* Nuevo Botón de Eliminar */}
-                    <button
-                      onClick={() => eliminarTicket(ticket.id)}
-                      className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all flex items-center justify-center"
-                      title="Eliminar ticket"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                    )}
+
+                      {/* Botón Resuelto */}
+                      <button
+                        onClick={() => toggleEstado(ticket.id, ticket.estado)}
+                        className={`flex-1 md:flex-none px-3 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                          esPendiente 
+                            ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20" 
+                            : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                        }`}
+                      >
+                        {esPendiente ? (
+                          "Marcar como Resuelto"
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                            Resuelto
+                          </>
+                        )}
+                      </button>
+                      
+                      {/* Botón Eliminar */}
+                      <button
+                        onClick={() => eliminarTicket(ticket.id)}
+                        className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all flex items-center justify-center"
+                        title="Eliminar ticket"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
                 </article>
               );
             })}
