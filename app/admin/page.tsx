@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import { Wrench, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2 } from "lucide-react";
 
 export default function PanelAdmin() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -45,6 +45,27 @@ export default function PanelAdmin() {
       alert("Error al actualizar estado");
       // Revertimos si hay error
       fetchTickets();
+    }
+  };
+
+  // Función para eliminar un ticket definitivamente
+  const eliminarTicket = async (id: string) => {
+    // Te pide confirmación para no borrar por accidente
+    const confirmar = window.confirm("¿Seguro que querés eliminar este ticket del historial?");
+    if (!confirmar) return;
+
+    // Actualizamos localmente primero (desaparece de la pantalla al instante)
+    setTickets(tickets.filter(t => t.id !== id));
+
+    // Lo borramos de Supabase
+    const { error } = await supabase
+      .from("tickets")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert("Error al eliminar el ticket");
+      fetchTickets(); // Si falla, recargamos la lista
     }
   };
 
@@ -126,26 +147,35 @@ export default function PanelAdmin() {
                     )}
                   </div>
 
-                  {/* Botón de Acción */}
-                  <button
-                    onClick={() => toggleEstado(ticket.id, ticket.estado)}
-                    className={`mt-4 md:mt-0 w-full md:w-auto px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                      esPendiente 
-                        ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20" 
-                        : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-                    }`}
-                  >
-                    {esPendiente ? (
-                      <>
-                        Marcar como Resuelto
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        Resuelto
-                      </>
-                    )}
-                  </button>
+{/* Botones de Acción */}
+                  <div className="mt-4 md:mt-0 w-full md:w-auto flex items-center gap-2">
+                    <button
+                      onClick={() => toggleEstado(ticket.id, ticket.estado)}
+                      className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                        esPendiente 
+                          ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20" 
+                          : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                      }`}
+                    >
+                      {esPendiente ? (
+                        "Marcar como Resuelto"
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                          Resuelto
+                        </>
+                      )}
+                    </button>
+                    
+                    {/* Nuevo Botón de Eliminar */}
+                    <button
+                      onClick={() => eliminarTicket(ticket.id)}
+                      className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all flex items-center justify-center"
+                      title="Eliminar ticket"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </article>
               );
             })}

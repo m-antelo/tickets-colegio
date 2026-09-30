@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Wrench, Send, AlertCircle, CheckCircle2, Building, BookOpen, Baby, Monitor, Info } from "lucide-react";
+import { Wrench, Send, AlertCircle, CheckCircle2, Building, BookOpen, Baby, Monitor, Info, ChevronDown} from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 export default function NuevoTicket() {
@@ -21,9 +21,13 @@ export default function NuevoTicket() {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
 
+  //listas de problemas y aulas
+  const [dropdownProblema, setDropdownProblema] = useState(false);
+  const [dropdownAula, setDropdownAula] = useState(false);
+
   const esAdministracion = sector === "Administración";
-  const esOtroProblema = tipoProblema === "otro";
-  const requiereDivision = (sector === "Primaria" || sector === "Secundaria") && (aula.includes("Año") || aula.includes ("Grado"));
+  const esOtroProblema = tipoProblema === "Otro tipo de problema";
+  const requiereDivision = (sector === "Primaria" || sector === "Secundaria") && (aula.includes("Año") || aula.includes ("Grado") || aula === "Intermedio");
   
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,22 +89,23 @@ export default function NuevoTicket() {
             <Wrench className="w-7 h-7" strokeWidth={2} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Soporte Técnico</h1>
-          <p className="text-zinc-500 text-sm mt-1.5">Reportá el problema y lo revisamos en breve.</p>
+          <p className="text-zinc-500 text-sm mt-1.5">Reportá el problema y Mateo lo revisará en la semana.</p>
         </div>
 
         {/* Recuadro informativo */}
         <div className="bg-indigo-900/10 border border-indigo-500/20 rounded-2xl p-5 mb-8 relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <Info className="w-5 h-5 text-indigo-400" />
-            <h3 className="font-semibold text-indigo-300">¿Cómo funciona el sistema?</h3>
+            <h3 className="font-semibold text-indigo-300">¿Cómo funciona este sistema de reportes?</h3>
           </div>
           <ul className="space-y-2 text-sm text-zinc-400 pl-7 list-disc marker:text-indigo-500/50">
-            <li>Cargá el problema acá y me llega directo a mí.</li>
-            <li>
-              Suelo estar en el colegio los <strong className="text-zinc-300">Jueves en el horario del mediodía</strong> 
+            <li>Cargá el problema y le llega directamente a <strong className="text-zinc-300">Mateo.</strong> 
             </li>
             <li>
-              Ante cualquier duda o urgencia, avisen a <strong className="text-zinc-300">Toti</strong> o a <strong className="text-zinc-300">Guada</strong> y ellos me contactan directamente.
+              Mateo Suele estar en el colegio los <strong className="text-zinc-300">Jueves en el horario del mediodía</strong> 
+            </li>
+            <li>
+              Ante cualquier duda o urgencia, avisen a <strong className="text-zinc-300">Toti</strong> o a <strong className="text-zinc-300">Guada</strong> y ellos hablan con Mateo directamente.
             </li>
           </ul>
         </div>
@@ -141,59 +146,91 @@ export default function NuevoTicket() {
           </div>
 
           {/* 2. Sub-selección (Aulas o Administración) */}
+{/* 2. Sub-selección (Aulas o Administración) */}
           {sector && !esAdministracion && (
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300 relative z-20">
               <label className="block text-sm font-medium text-zinc-400 mb-2">Seleccioná el Aula</label>
-              <select 
-                value={aula}
-                onChange={(e) => setAula(e.target.value)}
-                className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3.5 outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/70 transition-all text-zinc-200 appearance-none"
-                required
+              
+              {/* Botón principal que simula el select */}
+              <div 
+                onClick={() => setDropdownAula(!dropdownAula)}
+                className={`w-full bg-[#09090b] border rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition-all ${
+                  dropdownAula ? "border-indigo-500/70 ring-1 ring-indigo-500/70" : "border-zinc-800 hover:border-indigo-500/50"
+                }`}
               >
-                <option value="" disabled>Elegí un aula...</option>
-                {sector === "Jardín" && (
-                  <>
-                    <option value="Sala de 2">Sala de 2</option>
-                    <option value="Sala de 3">Sala de 3</option>
-                    <option value="Sala de 4">Sala de 4</option>
-                    <option value="Sala de 5">Sala de 5</option>
-                  </>
-                )}
-                {(sector === "Secundaria") && (
-                  <>
-                    <option value="1er Año">1er Año </option>
-                    <option value="2do Año">2do Año </option>
-                    <option value="3er Año">3er Año </option>
-                    <option value="4to Año">4to Año </option>
-                    <option value="5to Año">5to Año </option>
-                    <option value="Intermedio">Intermedio</option>
-                    <option value="Auxiliar">Auxiliar (especificar ubicación)</option>
-                    <option value="Gabinete informatica">Gabinete de Informática</option>
-                    <option value="Sala de arte">Sala de arte</option>
-                    <option value="Biblioteca">Biblioteca</option>
-                    <option value="Sala de Profes">Sala de profes</option>
-                  </>
-                )}
-                {sector === "Primaria" && (
-                  <>
-                    <option value="1er Grado">1er Grado </option>
-                    <option value="2do Grado">2do Grado </option>
-                    <option value="3er Grado">3er Grado </option>
-                    <option value="4to Grado">4to Grado </option>
-                    <option value="5to Grado">5to Grado </option>
-                    <option value="6to Grado">6to Grado </option>
-                    <option value="Sala Computacion">Sala de computación</option>
-                    <option value="Sala De Maestras">Sala de Maestras</option>
-                  </>
-                )}
-              </select>
+                <span className={aula ? "text-zinc-200" : "text-zinc-500"}>
+                  {aula || "Elegí un aula..."}
+                </span>
+                <ChevronDown className={`w-5 h-5 text-zinc-500 transition-transform duration-300 ${dropdownAula ? "rotate-180" : ""}`} />
+              </div>
+
+              {/* Lista desplegable flotante de Aulas */}
+              {dropdownAula && (
+                <div className="absolute z-50 w-full mt-2 bg-[#121214] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                  
+                  {/* Lista para Jardín */}
+                  {sector === "Jardín" && ["Sala de 3", "Sala de 4", "Sala de 5"].map((opcion) => (
+                    <div
+                      key={opcion}
+                      onClick={() => {
+                        setAula(opcion);
+                        setDropdownAula(false);
+                      }}
+                      className={`p-3.5 cursor-pointer transition-all text-sm border-b border-zinc-800/50 last:border-0 hover:bg-indigo-600/10 hover:text-indigo-300 ${
+                        aula === opcion ? "bg-indigo-600/20 text-indigo-400 font-medium" : "text-zinc-300"
+                      }`}
+                    >
+                      {opcion}
+                    </div>
+                  ))}
+
+{/* Lista para Primaria */}
+                  {sector === "Primaria" && [
+                    "1er Grado", "2do Grado", "3er Grado", "4to Grado", "5to Grado", "6to Grado", 
+                    "Biblioteca", "Sala de computación", "Sala de Maestros", "Otro salón (especificar)"
+                  ].map((opcion) => (
+                    <div
+                      key={opcion}
+                      onClick={() => {
+                        setAula(opcion);
+                        setDropdownAula(false);
+                      }}
+                      className={`p-3.5 cursor-pointer transition-all text-sm border-b border-zinc-800/50 last:border-0 hover:bg-indigo-600/10 hover:text-indigo-300 ${
+                        aula === opcion ? "bg-indigo-600/20 text-indigo-400 font-medium" : "text-zinc-300"
+                      }`}
+                    >
+                      {opcion}
+                    </div>
+                  ))}
+
+                  {/* Lista para Secundaria */}
+                  {sector === "Secundaria" && [
+                    "1er Año", "2do Año", "3er Año", "4to Año", "5to Año", "Intermedio", 
+                    "Auxiliar", "Sala de Arte", "Biblioteca", "Sala de Profes", "Gabinete informática", "Otro Aula (especificar)"
+                  ].map((opcion) => (
+                    <div
+                      key={opcion}
+                      onClick={() => {
+                        setAula(opcion);
+                        setDropdownAula(false);
+                      }}
+                      className={`p-3.5 cursor-pointer transition-all text-sm border-b border-zinc-800/50 last:border-0 hover:bg-indigo-600/10 hover:text-indigo-300 ${
+                        aula === opcion ? "bg-indigo-600/20 text-indigo-400 font-medium" : "text-zinc-300"
+                      }`}
+                    >
+                      {opcion}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
+          
 
           {/* Selector de Turno (M o J) - Solo aparece si es necesario */}
           {requiereDivision && (
             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-              <label className="block text-sm font-medium text-zinc-400 mb-2">Turno / División</label>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">División</label>
               <div className="grid grid-cols-2 gap-3">
                 {["M", "J"].map((div) => (
                   <button
@@ -211,7 +248,7 @@ export default function NuevoTicket() {
                       errorTurno && !division ? "border-rose-500/50 bg-rose-500/5 text-rose-400" : ""
                     }`}
                   >
-                    Turno {div}
+                    Division {div}
                   </button>
                 ))}
               </div>
@@ -246,23 +283,51 @@ export default function NuevoTicket() {
           {sector && (
             <div className="animate-in fade-in duration-300 space-y-6">
               <div>
+                <div className="relative">
                 <label className="block text-sm font-medium text-zinc-400 mb-2">¿Qué falla?</label>
-                <select 
-                  value={tipoProblema}
-                  onChange={(e) => setTipoProblema(e.target.value)}
-                  className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3.5 outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/70 transition-all text-zinc-200 appearance-none"
-                  required
+                
+                {/* Botón principal que simula el select */}
+                <div 
+                  onClick={() => setDropdownProblema(!dropdownProblema)}
+                  className={`w-full bg-[#09090b] border rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition-all ${
+                    dropdownProblema ? "border-indigo-500/70 ring-1 ring-indigo-500/70" : "border-zinc-800 hover:border-indigo-500/50"
+                  }`}
                 >
-                  <option value="" disabled>Seleccioná el problema...</option>
-                  <option value="internet">No hay internet / Wi-Fi</option>
-                  <option value="pc_no_prende">La compu no enciende</option>
-                  <option value="pc_lenta">La compu anda lenta</option>
-                  <option value="pc_reinicia">La compu tira pantalla azul con una carita triste </option>
-                  <option value="audio">Problema con audio</option>
-                  <option value="programas">Me faltan programas (especificar) </option>
-                  <option value="Impresora">Problemas con la impresora (especificar) </option>
-                  <option value="otro">Otro tipo de problema</option>
-                </select>
+                  <span className={tipoProblema ? "text-zinc-200" : "text-zinc-500"}>
+                    {tipoProblema || "Seleccioná el problema..."}
+                  </span>
+                  <ChevronDown className={`w-5 h-5 text-zinc-500 transition-transform duration-300 ${dropdownProblema ? "rotate-180" : ""}`} />
+                </div>
+
+                {/* Lista desplegable flotante */}
+                {dropdownProblema && (
+                  <div className="absolute z-50 w-full mt-2 bg-[#121214] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                    {[
+                      "No hay internet / Wi-Fi",
+                      "La compu no enciende",
+                      "La compu anda lenta",
+                      "La compu tira pantalla azul con una carita triste",
+                      "Problema con audio",
+                      "Me faltan programas (especificar)",
+                      "Problemas con la impresora (especificar)",
+                      "Otro tipo de problema"
+                    ].map((prob) => (
+                      <div
+                        key={prob}
+                        onClick={() => {
+                          setTipoProblema(prob);
+                          setDropdownProblema(false); // Cierra el menú al elegir
+                        }}
+                        className={`p-3.5 cursor-pointer transition-all text-sm border-b border-zinc-800/50 last:border-0 hover:bg-indigo-600/10 hover:text-indigo-300 ${
+                          tipoProblema === prob ? "bg-indigo-600/20 text-indigo-400 font-medium" : "text-zinc-300"
+                        }`}
+                      >
+                        {prob}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               </div>
 
               <div>
