@@ -2,11 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2 } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock } from "lucide-react";
 
 export default function PanelAdmin() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [autenticado, setAutenticado] = useState(false);
+  const [password, setPassword] = useState("");
+  const [errorPassword, setErrorPassword] = useState(false);
+
+  //funcion login
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === "cjmadmin") { // <-- Cambiá esta contraseña por la que quieras
+      setAutenticado(true);
+      setErrorPassword(false);
+    } else {
+      setErrorPassword(true);
+    }
+  };
 
   // Función para traer los tickets
   const fetchTickets = async () => {
@@ -71,6 +85,42 @@ export default function PanelAdmin() {
 
   if (cargando) {
     return <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">Cargando panel...</div>;
+  }
+
+  // Pantalla de bloqueo si no está autenticado
+  if (!autenticado) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+        <div className="bg-[#121214] border border-zinc-800 p-8 rounded-2xl w-full max-w-md shadow-2xl text-center relative z-10 animate-in fade-in zoom-in duration-300">
+          <div className="bg-indigo-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/20 shadow-inner">
+            <Lock className="w-8 h-8 text-indigo-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-zinc-100 mb-2">Acceso Restringido</h2>
+          <p className="text-zinc-400 font-sans mb-8 text-sm">Ingresá la contraseña para ver los tickets.</p>
+          
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña..."
+                className="w-full bg-[#09090b] border border-zinc-700 rounded-xl p-3.5 text-zinc-100 placeholder:text-zinc-500 font-sans focus:outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/70 transition-all text-center"
+              />
+              {errorPassword && (
+                <p className="text-rose-400 text-sm mt-2 animate-in slide-in-from-top-1">Contraseña incorrecta.</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl p-3.5 font-sans transition-all shadow-lg shadow-indigo-900/20"
+            >
+              Entrar al Panel
+            </button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   return (
