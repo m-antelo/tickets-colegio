@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock, MessageCircle } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock, MessageCircle, Loader2 } from "lucide-react";
 
 export default function PanelAdmin() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -89,10 +89,20 @@ export default function PanelAdmin() {
     }
   };
 
+// Pantalla de carga con diseño premium
   if (cargando) {
-    return <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">Cargando panel...</div>;
+    return (
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-4">
+        <div className="bg-[#121214] border border-zinc-800/50 p-6 rounded-2xl flex flex-col items-center shadow-2xl">
+          <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
+          <h3 className="text-lg font-semibold text-zinc-200 mb-1">Cargando panel...</h3>
+          <p className="text-zinc-500 text-sm animate-pulse">Sincronizando reportes</p>
+        </div>
+      </div>
+    );
   }
 
+  
   // Pantalla de bloqueo si no está autenticado
   if (!autenticado) {
     return (
