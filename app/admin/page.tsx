@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock, MessageCircle, Loader2 } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Lock, MessageCircle, Loader2, X } from "lucide-react";
 
 export default function PanelAdmin() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -10,16 +10,17 @@ export default function PanelAdmin() {
   const [autenticado, setAutenticado] = useState(false);
   const [password, setPassword] = useState("");
   const [errorPassword, setErrorPassword] = useState(false);
-  const [rol, setRol] = useState(""); // Va a guardar "admin" o "visor"
+  const [rol, setRol] = useState("");
+  const [resolviendoId, setResolviendoId] = useState<string | null>(null);
+  const [textoResolucion, setTextoResolucion] = useState("");
 
-  //funcion login
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === "cjmadmin") {
       setAutenticado(true);
       setRol("admin");
       setErrorPassword(false);
-    } else if (password === "cjmver") { // <--- Contraseña para el jefe
+    } else if (password === "cjmver") {
       setAutenticado(true);
       setRol("visor");
       setErrorPassword(false);
@@ -28,7 +29,6 @@ export default function PanelAdmin() {
     }
   };
 
-  // Función para traer los tickets
   const fetchTickets = async () => {
     const { data, error } = await supabase
       .from("tickets")
@@ -43,41 +43,59 @@ export default function PanelAdmin() {
     setCargando(false);
   };
 
-  // Cargar tickets al iniciar
   useEffect(() => {
     fetchTickets();
   }, []);
 
-  // Función para cambiar el estado a "Resuelto" o volver a "Pendiente"
   const toggleEstado = async (id: string, estadoActual: string) => {
     const nuevoEstado = estadoActual === "Pendiente" ? "Resuelto" : "Pendiente";
     
-    // Actualizamos localmente primero (para que sea instantáneo a la vista)
     setTickets(tickets.map(t => t.id === id ? { ...t, estado: nuevoEstado } : t));
 
-    // Actualizamos en la base de datos
     const { error } = await supabase
       .from("tickets")
-      .update({ estado: nuevoEstado })
+      .update({ 
+        estado: nuevoEstado,
+        resolucion: nuevoEstado === "Pendiente" ? null : undefined
+      })
       .eq("id", id);
 
     if (error) {
       alert("Error al actualizar estado");
-      // Revertimos si hay error
       fetchTickets();
     }
   };
 
-  // Función para eliminar un ticket definitivamente
+  const confirmarResolucion = async (id: string) => {
+    if (!textoResolucion.trim()) {
+      alert("Por favor, escribí brevemente qué se hizo.");
+      return;
+    }
+
+    setTickets(tickets.map(t => 
+      t.id === id ? { ...t, estado: "Resuelto", resolucion: textoResolucion } : t
+    ));
+
+    const { error } = await supabase
+      .from("tickets")
+      .update({ estado: "Resuelto", resolucion: textoResolucion })
+      .eq("id", id);
+
+    if (error) {
+      alert("Error al guardar la resolución");
+      fetchTickets();
+    }
+    
+    setResolviendoId(null);
+    setTextoResolucion("");
+  };
+
   const eliminarTicket = async (id: string) => {
-    // Te pide confirmación para no borrar por accidente
     const confirmar = window.confirm("¿Seguro que querés eliminar este ticket del historial?");
     if (!confirmar) return;
 
-    // Actualizamos localmente primero (desaparece de la pantalla al instante)
     setTickets(tickets.filter(t => t.id !== id));
 
-    // Lo borramos de Supabase
     const { error } = await supabase
       .from("tickets")
       .delete()
@@ -85,11 +103,10 @@ export default function PanelAdmin() {
 
     if (error) {
       alert("Error al eliminar el ticket");
-      fetchTickets(); // Si falla, recargamos la lista
+      fetchTickets();
     }
   };
 
-// Pantalla de carga con diseño premium
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-4">
@@ -102,8 +119,6 @@ export default function PanelAdmin() {
     );
   }
 
-  
-  // Pantalla de bloqueo si no está autenticado
   if (!autenticado) {
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
@@ -155,8 +170,8 @@ export default function PanelAdmin() {
             </div>
           </div>
           <div className="mt-4 md:mt-0 bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm flex gap-2">
-             Total: <span className="font-bold text-indigo-400">{tickets.length}</span> | 
-             Pendientes: <span className="font-bold text-amber-400">{tickets.filter(t => t.estado === "Pendiente").length}</span>
+            Total: <span className="font-bold text-indigo-400">{tickets.length}</span> | 
+            Pendientes: <span className="font-bold text-amber-400">{tickets.filter(t => t.estado === "Pendiente").length}</span>
           </div>
         </header>
 
@@ -172,93 +187,142 @@ export default function PanelAdmin() {
             {tickets.map((ticket) => {
               const esPendiente = ticket.estado === "Pendiente";
               
-              // Estilos según prioridad
               let prioridadEstilo = "text-zinc-500 bg-zinc-800";
               if (ticket.prioridad === "Alta") prioridadEstilo = "text-rose-400 bg-rose-500/10 border-rose-500/30 border";
               if (ticket.prioridad === "Media") prioridadEstilo = "text-amber-400 bg-amber-500/10 border-amber-500/30 border";
               if (ticket.prioridad === "Baja") prioridadEstilo = "text-emerald-400 bg-emerald-500/10 border-emerald-500/30 border";
 
-              // Estilos según estado
               const cardEstilo = esPendiente 
                 ? "bg-[#121214] border-zinc-700 hover:border-indigo-500/50" 
                 : "bg-[#09090b] border-zinc-800/50 opacity-60";
 
               return (
-                <article key={ticket.id} className={`p-5 rounded-2xl border transition-all ${cardEstilo} flex flex-col md:flex-row gap-4 items-start md:items-center justify-between`}>
+                <article key={ticket.id} className={`p-5 rounded-2xl border transition-all ${cardEstilo} flex flex-col gap-4`}>
                   
-                  {/* Info principal */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className={`text-xs font-bold px-2 py-1 rounded-md ${prioridadEstilo}`}>
-                        Prioridad {ticket.prioridad}
-                      </span>
-                      <span className="text-xs text-zinc-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {new Date(ticket.creado_en).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
-                      </span>
-                    </div>
+                  {/* --- PLANTA ALTA: Info y Botones --- */}
+                  <div className="flex flex-col md:flex-row justify-between items-start w-full gap-4">
                     
-                    <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                      {ticket.ubicacion.replace('_', ' ').toUpperCase()}
-                      {ticket.nombre_admin && <span className="text-zinc-400 font-normal text-sm">- {ticket.nombre_admin}</span>}
-                    </h2>
-                    
-                    <p className="text-zinc-300 font-medium mt-1">Falla: {ticket.tipo_problema.replace('_', ' ')}</p>
-                    
-                    {ticket.detalles && (
-                      <p className="text-zinc-500 text-sm mt-2 flex items-start gap-1">
-                        <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                        {ticket.detalles}
-                      </p>
-                    )}
-                  </div>
-                  
-                {/* Botones de Acción (SOLO PARA ADMIN) */}
-                  {rol === "admin" && (
-                    <div className="mt-4 md:mt-0 w-full md:w-auto flex items-center gap-2">
+                    {/* Info principal (Izquierda) */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`text-xs font-bold px-2 py-1 rounded-md ${prioridadEstilo}`}>
+                          Prioridad {ticket.prioridad}
+                        </span>
+                        <span className="text-xs text-zinc-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {new Date(ticket.creado_en).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                        </span>
+                      </div>
                       
-                      {/* Botón de WhatsApp (Cuadrado) */}
-                      {ticket.telefono && (
-                        <a 
-                          href={`https://wa.me/549${ticket.telefono.replace(/\D/g, '')}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all flex items-center justify-center"
-                          title="Hablar por WhatsApp"
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                        </a>
+                      <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                        {ticket.ubicacion.replace('_', ' ').toUpperCase()}
+                        {ticket.nombre_admin && <span className="text-zinc-400 font-normal text-sm">- {ticket.nombre_admin}</span>}
+                      </h2>
+                      
+                      <p className="text-zinc-300 font-medium mt-1">Falla: {ticket.tipo_problema.replace('_', ' ')}</p>
+                      
+                      {ticket.detalles && (
+                        <p className="text-zinc-500 text-sm mt-2 flex items-start gap-1">
+                          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                          {ticket.detalles}
+                        </p>
                       )}
+                    </div>
 
-                      {/* Botón Resuelto */}
-                      <button
-                        onClick={() => toggleEstado(ticket.id, ticket.estado)}
-                        className={`flex-1 md:flex-none px-3 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                          esPendiente 
-                            ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20" 
-                            : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-                        }`}
-                      >
-                        {esPendiente ? (
-                          "Marcar como Resuelto"
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                            Resuelto
-                          </>
-                        )}
-                      </button>
-                      
-                      {/* Botón Eliminar */}
-                      <button
-                        onClick={() => eliminarTicket(ticket.id)}
-                        className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all flex items-center justify-center"
-                        title="Eliminar ticket"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                    {/* Botones (Derecha) */}
+                    <div className="w-full md:w-auto mt-2 md:mt-0">
+                      {rol === "admin" && (
+                        <div className="mt-4 md:mt-0 w-full md:w-auto flex items-center gap-2">
+                          
+                          {ticket.telefono && (
+                            <a 
+                              href={`https://wa.me/549${ticket.telefono.replace(/\D/g, '')}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all flex items-center justify-center"
+                              title="Hablar por WhatsApp"
+                            >
+                              <MessageCircle className="w-5 h-5" />
+                            </a>
+                          )}
+
+                          {resolviendoId === ticket.id ? (
+                            <div className="flex-1 md:flex-none flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                              <input 
+                                type="text"
+                                value={textoResolucion}
+                                onChange={(e) => setTextoResolucion(e.target.value)}
+                                placeholder="¿Qué hiciste?..."
+                                autoFocus
+                                className="bg-[#09090b] border border-indigo-500/50 rounded-xl p-3 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 w-full md:w-56"
+                              />
+                              <button 
+                                onClick={() => confirmarResolucion(ticket.id)}
+                                className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-xl transition-all"
+                                title="Guardar y Resolver"
+                              >
+                                <CheckCircle2 className="w-5 h-5" />
+                              </button>
+                              <button 
+                                onClick={() => setResolviendoId(null)}
+                                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 p-3 rounded-xl transition-all"
+                                title="Cancelar"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (esPendiente) {
+                                  setResolviendoId(ticket.id);
+                                  setTextoResolucion("");
+                                } else {
+                                  toggleEstado(ticket.id, ticket.estado);
+                                }
+                              }}
+                              className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                                esPendiente 
+                                  ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20" 
+                                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                              }`}
+                            >
+                              {esPendiente ? (
+                                "Marcar como Resuelto"
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                  Resuelto
+                                </>
+                              )}
+                            </button>
+                          )}
+                          
+                          <button
+                            onClick={() => eliminarTicket(ticket.id)}
+                            className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all flex items-center justify-center"
+                            title="Eliminar ticket"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* --- PLANTA BAJA: Recuadro de Resolución --- */}
+                  {ticket.estado === "Resuelto" && ticket.resolucion && (
+                    <div className="mt-2 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl animate-in fade-in w-full">
+                      <div className="flex items-center gap-2 mb-1.5 text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <h4 className="text-sm font-semibold">Trabajo realizado:</h4>
+                      </div>
+                      <p className="text-sm text-zinc-300 ml-6 break-words whitespace-pre-wrap">
+                        {ticket.resolucion}
+                      </p>
                     </div>
                   )}
+
                 </article>
               );
             })}
