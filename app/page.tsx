@@ -195,7 +195,7 @@ export default function NuevoTicket() {
                 <div className="absolute z-50 w-full mt-2 bg-[#121214] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2">
                   
                   {/* Lista para Jardín */}
-                  {sector === "Jardín" && ["Sala de 3", "Sala de 4", "Sala de 5"].map((opcion) => (
+                  {sector === "Jardín" && ["Sala de 2", "Sala de 3", "Sala de 4", "Sala de 5"].map((opcion) => (
                     <div
                       key={opcion}
                       onClick={() => {
