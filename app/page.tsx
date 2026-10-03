@@ -86,6 +86,19 @@ export default function NuevoTicket() {
       console.error(error);
     } else {
       setEnviado(true);
+
+      // 3. AVISAMOS A DISCORD
+      const webhookUrl = "https://discord.com/api/webhooks/1555958185066635326/WitgMImN1qDBuBKtVgWdWPpkXaPUe8X34-DYaAtkkzYgNKRd8c_GQ1MRaU5VppXxC8wU";
+      const mensajeDiscord = {
+        content: `🚨 **¡NUEVO TICKET DE SOPORTE!** 🚨\n\n📍 **Ubicación:** ${ubicacionFinal}\n🔥 **Problema:** ${tipoProblema.replace('_', ' ')}\n📝 **Detalles:** ${detalles || "Sin detalles adicionales"}\n⚡ **Prioridad:** ${prioridad}${telefono ? `\n📱 **WhatsApp:** ${telefono}` : ""}`
+      };
+
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mensajeDiscord)
+      }).catch(err => console.error("Error avisando a Discord:", err));
+
       setTimeout(() => {
         setSector("");
         setAula("");
